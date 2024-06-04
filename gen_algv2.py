@@ -1,11 +1,13 @@
-# /mnt/data/sports_team_optimization.py
-
 import mlrose_hiive as mlrose
 import numpy as np
 import pandas as pd
 from typing import List, Dict
+import matplotlib.pyplot as plt
 
-# Definición de constantes
+MAX_ITERATIONS = 10
+POP_SIZE = 1000
+MUTATION_PROB = 0.15
+
 JUGADORES = ['Messi', 'Dibu Martinez', 'Perrito Barrios', 'Equi Fernandez', 'Paulo Diaz']
 POSICIONES = ['Arquero', 'Delantero', 'Marcador central', 'Mediocampista central', 'Volante']
 HABILIDADES = ['Reflejos', 'Fuerza', 'Regate', 'Marcaje', 'Visión']
@@ -14,7 +16,6 @@ NUM_CAMISETAS = [10, 23, 28, 21, 17]
 
 best_combinations: List[Dict] = []
 
-# Definición de la función de aptitud
 def fitness_function(solution: List[int]) -> int:
     score = 100
     jugador_idx, posicion_idx, habilidad_idx, equipo_idx, camiseta_idx = solution
@@ -24,7 +25,6 @@ def fitness_function(solution: List[int]) -> int:
     equipo = EQUIPOS[equipo_idx]
     num_camiseta = NUM_CAMISETAS[camiseta_idx]
 
-    # Condiciones y puntuaciones
     score_conditions = [
         (jugador == 'Dibu Martinez' and posicion == 'Arquero', 1),
         (jugador == 'Dibu Martinez' and posicion != 'Arquero', -5),
@@ -100,7 +100,6 @@ def fitness_function(solution: List[int]) -> int:
 
     return score
 
-# Definición del problema
 problem = mlrose.DiscreteOpt(
     length=5,
     fitness_fn=mlrose.CustomFitness(fitness_function),
@@ -108,29 +107,26 @@ problem = mlrose.DiscreteOpt(
     max_val=5
 )
 
-# Configuración de los parámetros del algoritmo genético
-pop_size = 5000
-mutation_prob = 0.15
+pop_size = POP_SIZE
+mutation_prob = MUTATION_PROB
 
-# Ejecución del algoritmo genético
-best_solution_tuple = mlrose.genetic_alg(
+solution = mlrose.genetic_alg(
     problem,
     pop_size=pop_size,
     mutation_prob=mutation_prob,
-    max_attempts=10,
-    max_iters=10000
+    max_attempts=100,
+    max_iters=MAX_ITERATIONS,
+    curve=True,
 )
 
-# Obtener la mejor solución y su aptitud
-best_solution = best_solution_tuple[0]
-best_fitness = best_solution_tuple[1]
+best_solution = solution[0]
+best_fitness = solution[1]
+fitness_curve = solution[2]
 
-# Decodificación de la mejor solución
 best_solution_decoded = [
     (JUGADORES[best_solution[0]], POSICIONES[best_solution[1]], HABILIDADES[best_solution[2]], EQUIPOS[best_solution[3]], NUM_CAMISETAS[best_solution[4]])
 ]
 
-# Resultados
 df_best_combinations = pd.DataFrame(best_combinations)
 df_best_combinations_sorted = df_best_combinations.sort_values(by='score', ascending=False)
 
@@ -141,4 +137,15 @@ print("Mejor solución encontrada:")
 for player in best_solution_decoded:
     print(player)
     print("El jugador con la habilidad 'Visión' es:", player[0])
-# print("Aptitud de la mejor solución:", best_fitness)
+print("Aptitud de la mejor solución:", best_fitness)
+
+fitnessToPlot = np.min(fitness_curve, axis=1)
+
+plt.figure(figsize=(10,6))
+plt.plot(fitnessToPlot)
+plt.xlim(0, MAX_ITERATIONS)
+plt.title('Puntaje máximo por iteración')
+plt.xlabel('Iteración')
+plt.ylabel('Puntaje máximo')
+plt.legend()
+plt.show()
