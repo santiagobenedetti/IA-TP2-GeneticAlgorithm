@@ -5,8 +5,8 @@ from typing import List, Dict
 import matplotlib.pyplot as plt
 
 MAX_ITERATIONS = 10
-POP_SIZE = 1000
-MUTATION_PROB = 0.15
+POP_SIZE = 10
+MUTATION_PROB = 0.99
 
 JUGADORES = ['Messi', 'Dibu Martinez', 'Perrito Barrios', 'Equi Fernandez', 'Paulo Diaz']
 POSICIONES = ['Arquero', 'Delantero', 'Marcador central', 'Mediocampista central', 'Volante']
